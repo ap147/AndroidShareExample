@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -13,7 +14,27 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // https://developer.android.com/training/sharing/receive
+        // Get intent, action and MIME type
+        Intent intent = getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (Intent.ACTION_SEND.equals(action) && type != null) {
+            if ("text/plain".equals(type)) {
+                handleSendText(intent); // Handle text being sent
+            }
+        }
+
         setupShareButton();
+    }
+
+    private void handleSendText(Intent intent) {
+        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+        if (sharedText != null) {
+            EditText editTextBox = findViewById(R.id.textViewMsg);
+            editTextBox.setText(sharedText);
+        }
     }
 
     private void setupShareButton() {
@@ -25,10 +46,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent sendIntent = new Intent(Intent.ACTION_SEND);
                 sendIntent.setType("text/plain");
-                String shareBody = "Body text goes here";
-                sendIntent.putExtra(Intent.EXTRA_TEXT, shareBody);
+
+                EditText editTextBox = findViewById(R.id.textViewMsg);
+                String msgToShare = editTextBox.getText().toString();
+                sendIntent.putExtra(Intent.EXTRA_TEXT, msgToShare);
 
                 startActivity(Intent.createChooser(sendIntent, "Share using"));
+                // https://developer.android.com/training/sharing/send
             }
         });
     }
